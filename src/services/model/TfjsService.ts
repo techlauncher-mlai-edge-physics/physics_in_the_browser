@@ -153,7 +153,6 @@ export class TfjsService implements ModelService {
     if (this.isPaused) {
       return;
     }
-    this.curFrameCountbyLastSecond += 1;
     const input = this.getInput();
     const energy = this.velocity.square().sum();
     // const output = this.model?.predict(input);
@@ -178,11 +177,17 @@ export class TfjsService implements ModelService {
       energyScale.print();
 
       this.velocity.assign(this.velocity.mul(energyScale.sqrt()));
-      const newMass = this.density.sum();
-      const massScale = this.mass.div(newMass);
-      this.density.assign(this.density.mul(massScale));
-      massScale.print();
-      newMass.dispose();
+      const scaleMass = function (
+        density: tf.Tensor,
+        oldMass: tf.Tensor,
+      ): tf.Tensor {
+        return tf.tidy(() => {
+          const newMass = density.sum();
+          const massScale = oldMass.div(newMass);
+          return density.mul(massScale);
+        });
+      };
+      this.density.assign(scaleMass(this.density, this.mass) as tf.Tensor4D);
       newEnergy.dispose();
       energy.dispose();
       energyScale.dispose();
