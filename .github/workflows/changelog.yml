@@ -29,7 +29,7 @@ jobs:
       - name: Commit changelog
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "chore(changelog): update CHANGELOG.md"
+          commit_message: "chore(changelog): update CHANGELOG.md [ci skip]"
           commit_options: '--no-verify --signoff'
           file_pattern: CHANGELOG.md
           push_options: --force
